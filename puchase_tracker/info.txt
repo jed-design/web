@@ -1,0 +1,3 @@
+application to track puchase orders of special parts and standard parts.
+Web-based, running an SQL data base
+Simlpe, light weigth

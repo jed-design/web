@@ -44,7 +44,8 @@ for (i = 0; i < 101; i++) {
 	if ((rest5 == 0) && (rest8 == 0)) // check if devideble with 5 & 8 
 	{
 		both.push(i);
-		} else 	{
+		} else 
+		if ((rest5 != 0) && (rest8 != 0)) {
 		others.push(i);  // not div by 5 or 8, push to others
 		}
 	}

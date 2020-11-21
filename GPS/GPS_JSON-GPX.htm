@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+      <title>JED json GPS-GPX converter</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+
+body {
+  background-color: #ddf;
+  font-family: sans-serif;
+}
+
+h2 {
+	font-weight: bold;
+	font-size: 20px;
+	align: center;
+}
+
+p {
+  font-size: 12pt;
+}
+
+.tag {
+  font-size: 10pt;
+  font-weight: bold;
+  
+}
+
+.info {
+background-color: #eee;
+	box-sizing: border-box;
+	width: 600px;
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 5px;
+	padding: 10px;
+}
+
+.conv_button {
+	background-color: #aaf;
+	background-image: linear-gradient(0deg,#bbf, #eef, #bbf);
+	/* position: relative;
+	left: 470px; */
+	margin: 5px;
+	border-style: solid;
+	border-width: 2px;
+	border-color: #555;
+	padding: 5px;
+	font-size: 10pt;
+	border-radius: 5px;
+	margin: 10px;
+}
+
+.conv_button:hover {
+	background-color: #ff0;
+	background-image: linear-gradient(0deg,#cc0, #ff5, #cc0);
+}
+
+	
+input[type=text] {
+  font-family: monospace;
+  font-size: 11pt;
+  width: 300px;
+  padding: 5px;
+  display: inline-block;
+  border: 1px solid #000;
+  border-radius: 5px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+textarea {
+  font-family: monospace;
+  font-size: 11pt;
+  width: 600px;
+  padding: 5px;
+  display: inline-block;
+  border: 1px solid #000;
+  border-radius: 5px;
+  box-sizing: border-box;
+  outline: none;
+  resize: none;	
+  
+}
+
+textarea:focus {
+	border: 1px solid #00F;
+	}
+
+table, td {
+
+	border: 1px;
+	padding: 10px;
+	spacing: 5px;
+	border-collapse: collapse;
+	border: 1px solid black;
+}
+
+table {
+	margin-left: auto;
+	margin-right: auto;
+	background-image: linear-gradient(#ccc, #eee);
+	corner-radius: 5px;
+	}
+
+a {
+	font-weight: bold;
+	color: #00f;
+	}
+
+
+
+</style>
+</head>
+
+<body>
+<table><tr><td colspan="2">
+<h2 align="center">Translate JSON GPS data to GPX format</h2>
+</td></tr>
+<tr><td heigth="300" valign="top">
+<p class="info">This script is made to transform JSON from <a href="http://www.norgeskart.no" target="_blank">Norgeskart.no</a> to standard GPX format.
+There may be other JSON GPS data exporters that works too, but no guarantie! 
+The correctness of the output is not guarnatied either! Use at your own risk!
+</p>
+
+<form>
+	<span class="tag">Route name:<br></span><input type="text" id="fname" name="routename" placeholder="Type your route name here!"><br>
+	<br>
+	<textarea name="area" id="area" rows="13" onClick="clearArea()">Json GPS here! Only raw data, not parsed!</textarea>
+ </form>
+ </td>
+ <td height="400" valign="top">
+ 
+ <p>
+ <form  id="output_form" method="post">
+ <textarea name="message" id="output" rows="21" name="output">GPX data shows up here!</textarea><br></form>
+ <button type="button" onclick="myFunction()" class="conv_button">Start convertion!</button><br>
+
+ <span id="sender">   </span>			<!-  After JSON conversion, a link shows up here. The link runs function loadDoc if clicked ->
+ <span id="recived">   </span>		<!-  recived AJAX info for file download goes in here ->
+</p>
+</td></tr></table>
+  
+<script>
+
+// This cleans the input textarea when clicking in it.
+function clearArea(){
+	if (clicked != 1){
+		document.getElementById('area').value = "";
+		var clicked = 1;
+		}
+	}
+
+function myFunction() {
+	// ************* Handeling of the GPS data starts here! ************* 
+	// **********************************************************
+	// ************** Time stamp hanlding ***********************
+		
+	// getDate() gets dates < 10 as only one digit. That does not comply with ISO standard, that the GPX standard follws, so month, day, hour, minute and second value must be made 2 digit.
+	function addZero(i) {
+	  if (i < 10) {
+		i = "0" + i;
+	  }
+		 return i;
+	}
+	
+	var d = new Date();	 //	Get a timestamp
+		
+	var month = addZero(d.getMonth());
+	var day = addZero(d.getDate());
+	var hours = addZero(d.getHours());
+	var minutes = addZero(d.getMinutes());
+	var seconds = addZero(d.getSeconds());
+	
+	// "time" builds the content of the <time>tag in the GPX file.
+	var time = d.getFullYear() + "-" + month + "-" + day + "T" + hours + ":" + minutes + ":" + seconds + "Z";
+	
+	
+	// ****************** Geometrical data handling starts here *************************
+	// Start is the header of the GPX file and as < can not be used as first letter of a var, &lt; is used instead.
+	var start = '&lt;?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n &lt;gpx xmlns="http://www.topografix.com/GPX/1/1" creator="JED-design converter"  version="1.1"\n xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n xsi:schemaLocation="http://www.topografix.com/GPX/1/1  http://www.topografix.com/GPX/1/1/gpx.xsd">\n';  
+	var a = "    ";					// TAB, 4 spaces, these are used to make the GPX file easier to read for humans.
+	var a2 = "        ";			// Doubble TAB, 8 spaces
+	var a3 = "            ";			// Tripple TAB, 12 spaces
+	var end = a + '</rte>\n</gpx> '   	// the end GPX tag
+	var fname = document.getElementById("fname").value;  // fname is the route name for the GPX file
+		
+	var data = document.getElementById("area").value;				// the raw JSON data that is imported
+	var jsonGPS ="";												// Create the variabe for the jsonGPS
+	var errorMessage = "Scheisse! Something is wrong with the JSON-data. Better check it up with a de-bugger.";	// This is the alerted error message of the jsonParse screw up
+	
+	 try {															// This "try" perform a error check of the jsonParse 			
+        jsonGPS = JSON.parse(data);
+    } catch(e) {													// catching if a error occurs
+		 alert(errorMessage); 										// error in the above string 	
+    }
+		
+	var gpx = jsonGPS.features[0].geometry.coordinates; 			// we make a new array of just the coordinates, as it is esier to loop
+	var distance = jsonGPS.features[0].properties.measurement;		// this fetches the total distance of the route
+	var gpxLength = gpx.length;  									// number of coordinates
+	var lats = [];													// this array will collect the latitude values
+	var longs = [];													// this array will collect the longditude values
+	 
+	var rte = a + '<rte>\n' ;										// this is a route, containing all the route points. The Start tag is inserted here
+	var rtept = a2; 												// this is a route point
+	
+	rte += a2 + '&lt;name>' + fname + '&lt;/name>\n' + a2 + '<cmt>Length=' + distance + 'km</cmt>\n'  + a2 + '&lt;extensions>    </extensions>\n'; // put in the name and extentions tags to the rte variable
+	
+	// OBS! Longditude is east-west. Latitude is notrh-south
+	// We start to extract all coordinates from the JSON data
+	
+	 for (i = 0; i < gpxLength; i++) {
+		var x = gpx[i][1].toFixed(7);								// this extract the latitude value
+		var y = gpx[i][0].toFixed(7);								// this extract the longditude value		
+		rte += a2 + '&lt;rtept lat="' + x + '" lon="' + y + '">\n'; // this is the coordinates for the route point
+		lats.push(x); 												// add the coordinate to lat. array, this is used for the boundary calculation later
+		longs.push(y);												// add the coordinate to long. array, this is used for the boundary calculation later
+		// the rest of the rtepr-tag and end tag goes below:
+		var rteptTime = a3 + '<time>' + time + '</time>\n';			// Time stamp for JSON file creation
+		var rteptName = a3 + '<name>' + 'WP' + i + '</name>\n';					// Name of the point (different softwares uses differnt tags, cmt and desc is redudant
+		var rteptCmt = a3 + '<cmt>Point no.' + i + '</cmt>\n';		// Comment of the point. I use the number of the point here. May make it easier to edit the points later.
+		var rteptDesc = a3 + '<desc> </desc>\n';					// Description of the point. 
+		var rteptSym = a3 + '<sym>Waypoint</sym>\n';				//	Type of point
+		var rteptExt = a3 + '<extensions></extensions>\n';			// Used for additional infomrmation, not included in the basic standard
+		
+		rte += rteptTime + rteptName + rteptCmt + rteptDesc + rteptSym + rteptExt + a2 + '</rtept>\n';	// Builds the point and add to the route
+	}
+	
+	// the following builds the outer bounds of the route
+	var maxlat = Math.max(...lats);  		// max latitude value
+	var maxlon = Math.max(...longs);		// max longditude value
+	var minlat = Math.min(...lats);			// min latitude value
+	var minlon = Math.min(...longs);		// min longditude value
+	// Bounds is used as a tag in the GPX file, in the metadata section
+	var bounds = '&lt;bounds maxlat= "' + maxlat + '" maxlon= "' + maxlon + '" minlat= "' + minlat + ' " minlon= "' + minlon + '" />\n';
+	
+	var meta =  a + '&lt;metadata>\n ' + a2 + '&lt;time>' + time + '&lt;/time>\n' + a2 + bounds + a +'&lt;/metadata>\n';   // Metadata for the GPX file
+
+	var outputGPX = start + meta + rte + end;								// we make a variable of this as it might be sent to the server
+	document.getElementById("output").innerHTML = outputGPX;  				// this prints the route in the output textarea
+	document.getElementById("sender").innerHTML = '<a onClick="loadDoc();" href="#">Save as a file!</a>';
+}
+
+// this contacts the server and the server runs a PHP script (gpx_ajax.php) and the result pops up in the <span id="recived">
+function loadDoc() {
+
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("recived").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("POST", "gpx_ajax.php", true);
+  xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xhttp.send("fname=" + fname.value + "&gpx=" + output.value);
+}
+
+</script>
+
+
+</body>
+</html> 

@@ -1,7 +1,7 @@
 <?php
 
 // first, we must state a date and time.
-
+date_default_timezone_set('Europe/Stockholm');
 $date = date_create();
  $now = date_format($date, 'Y-m-d H:i:s');		// create a variable of the time to put into the array, so we now then it was written
  // echo "Date now: " . $now .  "<br>\n";		// just for check

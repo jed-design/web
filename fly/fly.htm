@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WInd stations in Oslo/Drammen/Kongsberg area</title>
+
+ <meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+BODY {
+	align: center;
+	background-color: #ddd;
+	}
+
+TABLE {
+	/* border-color: #777;
+	border-style: solid;
+    border-width: 1px; */
+	background-color: #888;
+	margin: auto;
+	box-shadow: 0px 0px 5px #333;
+	}
+
+TD {
+	background-color: #eeee00;
+	}
+
+.h1 {
+    font-color: #000000;
+	height: 21px;
+	width: 200px;
+} 
+
+.place_name {
+	margin: 5px;
+	font-weight: bold;
+	font-size: 10pt;
+	font-family: sans-serif;
+	}
+
+.site {
+	width: 220px;
+	background-color: #cccccc;
+	padding: 0px;
+	border-style: solid;
+    border-width: 1px;
+	border-color: #333333;
+}
+
+
+.station {
+	border-style: solid;
+    border-width: 1px;
+	margin: 0px;
+	padding: 0px;
+}
+
+.cam {
+	width: 100%;
+	position: relative;
+	left: 155px;
+	top: -26px;
+	width: 45px;
+	height: 26px;
+}
+
+.content {
+    width: 100%;
+	margin: auto;
+	display: block;
+}
+
+
+
+.links {
+	width: 612px;
+	margin: auto; 
+	position: relative;
+	top: 0px;
+	left: 0px;
+	border: 3px solid blue;
+	padding: 3px;
+	font-weight: bold;
+	font-size: 12pt;
+	font-family: sans-serif;
+	background-color: #fff;	
+}
+
+@media only screen and (max-width: 620px) {
+  .links {
+    width: 200px;
+	margin-left: 20px;
+  }
+}
+
+A, A:visited {
+	text-decoration: none;
+	color: #000;
+}
+
+
+		
+</style>
+</head>
+<body onload="myTable()">
+    
+<div id="stations" class="content">   </div>
+
+<script>
+// array of arrays as following [id number at Holfuy, Name of location of the weather station, URL to nearby webcam]
+var stations = [
+ ["135", "Solfjellstua", "http://voksenlia.net/"], 
+ ["165", "Eggekollen", "http://tranby365.net/webkamera-1-netcam-xl.html"],
+ ["197", "Solberg&aring;sen", "url"],
+ ["124", "Gr&#0248;tterud", "url"],
+ ["119", "Brudeberget", "https://cameraftp.com/Camera/Cameraplayer.aspx?parentID=243718143&shareID=13914129&isEmbedded=false&mode=live"],
+ ["395", "Sundvollen", "https://holfuy.com/en/camera/395"],
+ ["314", "Hjartdal", "url"], 
+ ["727", "Rygh&aring;sen NV", "url"],
+ ["188", "Stokkelia", "url"]
+ ];
+ 
+var LL = stations.length;		// get the length of the array
+
+if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+var cols = 1;
+document.getElementById("stations").style.width = "250px";  // makes the content-<DIV> narrower
+document.getElementById("stations").style.margin = "0px";	// removes the center alignment so everything is presented at the left
+} else {
+var cols = 3;
+}
+	
+var rows = Math.ceil((stations.length)/cols);					// this calculates the number of rows needed for a "cols" number of columns in the table
+var rest = cols - (stations.length - (cols * (rows - 1)));		// this calculates the number of xtra dummy-values needed so to avoid empty <TD>s later on.
+
+// adds dummy fields is the station array...
+while (rest >= 1) {
+stations.push([0,0,0]);											// [0 = no station, 0 = no name for place, 0 = no webcam]
+rest--;
+}
+
+// ************************* Table creation starts here ******************
+
+var i = 0;	// counter for rows
+var n = 0; 	// cunter for index of array (stations)
+var j = 0;	// counter for cols
+
+function myTable() {
+  var x = document.createElement("TABLE");
+  x.setAttribute("id", "myTable");							
+  document.getElementById("stations").appendChild(x);
+	for (; i < (rows); ) {
+		var TR_name = "TR_" + i;
+		var y = document.createElement("TR");
+		y.setAttribute("id", TR_name);
+		document.getElementById("myTable").appendChild(y);
+		
+		 for (; j < cols; ) 
+			{
+			var z = document.createElement("TD");
+			var text = " ";
+			var cellName = "TD_" + n.toString();												// nameing the TD as this is needed to fill in the correct content later
+			var place = '<a href="http://holfuy.com/en/weather/' + stations[n][0] + '"target="blank"><div class="h1"><div class="place_name">' + stations[n][1] + '</div></a>';  // states the name of the geographical placement of the station.
+			
+			// If there is a webcam url, a image of a camera is added with a link to that webcam. The link is picked from the stations array.
+			if (stations[n][2] != "url") {
+				var cam = '<div class="cam"> <a href="' + stations[n][2] + '" target="_blank"><img src="http://jed-design.com/images/cam_900x520.png" alt="Camera symbol" style="width:45px;height:26px;"></a></div></div>';	// places a link to a webcam
+			} else {
+				var cam = "</div>";  															// if there is no camera, we need to close the DIV for the location header (place).
+			}
+			
+			z.setAttribute("id", cellName);
+			var t = document.createTextNode(text);  // dummy content for the cell, this is replaced when the cell is created and named with an ID. 
+  			z.appendChild(t);						
+			document.getElementById(TR_name).appendChild(z);	// builds the cell
+			
+			/* check if there is proper startion (0 = no station). 
+			This is splitted over serveral rows as it easier to read. 
+			If it is a real station, location, camera and link to Holfyu is added into the cell. */
+			if (stations[n][0] != 0 ) {			
+				document.getElementById(cellName).innerHTML = place + cam 
+					+ '<iframe id="station" class="station" scrolling="no"  src="https://widget.holfuy.com/?station=' 
+					+ stations[n][0] 
+					+ '&su=m/s&t=C&lang=en&mode=simple&bg=http://jed-design.com/images/simple.png" style="width:200px; height:80px;"></iframe>';
+				}
+			j++;
+			n++
+			}
+	i++;
+	j = 0;
+	}
+}
+
+</script>
+<br>
+<div class="links">
+	<a href="http://flyparaglider.com/Meteogram.aspx" target="blank">Fly paraglider - værlinker</a>
+</div>
+</body>
+</html>

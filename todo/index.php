@@ -1,12 +1,10 @@
 <?php
 
 
-// *******************************************************
+// ***********************************************************************************
 // Todo-list:
-// fixa selector-knapp
-// bygga array med "sak att gøra, prio, timestamp"
-// automatisk uppdatering så fort man lægger in något
-// *******************************************************
+// NOTE: The server URL for updating on row 357 needs to be updated to your server
+// ***********************************************************************************
 
 
 

@@ -40,21 +40,19 @@ if( isset($_POST['todo']) )
  <style>
  
 :root{
+
 	/* var-MainColor: #06c; */
    
    --std-width: 520px;
    --pos-left: calc(50vw - 260px);
-   }
-   
 }
 
- @media only screen and (max-width: 320px) {
-		/* var-MainColor: #06c; */
-	   
-	   --std-width: 230px;
-	   --pos-left: 0px;
+ @media only screen and (max-width: 520px) {
+	 :root{ 
+		--std-width: 320px;
+		--pos-left: calc(50vw - 160px);
+	}
  }
-
 
  html {
 	font-family: sans-serif;
